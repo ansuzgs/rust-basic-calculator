@@ -1,7 +1,6 @@
 # Rust Basic Calculator
 
-Calculadora básica implementada en Rust que soporta la operación de suma (`+`) con entradas que contienen espacios.
-
+Calculadora básica implementada en Rust que soporta operaciones aritméticas simples con espacios en la entrada.
 
 ## Compilación
 ```bash
