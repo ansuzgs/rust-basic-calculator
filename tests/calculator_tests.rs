@@ -15,7 +15,7 @@ fn test_invalid_number() {
 #[test]
 fn test_invalid_operator() {
     assert!(calculate("3 & 5").is_err());
-    assert!(calculate("4 * 2").is_err());
+    assert!(calculate("4 % 2").is_err());
 }
 
 #[test]
