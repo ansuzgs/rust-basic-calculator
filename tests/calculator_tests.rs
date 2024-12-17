@@ -24,3 +24,26 @@ fn test_incorrect_token_count() {
     assert!(calculate("3 + 5 + 2").is_err());
     assert!(calculate("+ 3 5").is_err());
 }
+
+#[test]
+fn test_simple_subtraction() {
+    assert_eq!(calculate("10 - 3").unwrap(), 7);
+    assert_eq!(calculate("5 - 2").unwrap(), 3);
+}
+
+#[test]
+fn test_simple_multiplication() {
+    assert_eq!(calculate("3 * 4").unwrap(), 12);
+    assert_eq!(calculate("7 * 6").unwrap(), 42);
+}
+
+#[test]
+fn test_simple_division() {
+    assert_eq!(calculate("8 / 2").unwrap(), 4);
+    assert_eq!(calculate("20 / 5").unwrap(), 4);
+}
+
+#[test]
+fn test_division_by_zero() {
+    assert!(calculate("10 / 0").is_err());
+}
