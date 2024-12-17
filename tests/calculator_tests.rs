@@ -7,25 +7,6 @@ fn test_simple_addition() {
 }
 
 #[test]
-fn test_invalid_number() {
-    assert!(calculate("abc + 5").is_err());
-    assert!(calculate("3 + xyz").is_err());
-}
-
-#[test]
-fn test_invalid_operator() {
-    assert!(calculate("3 & 5").is_err());
-    assert!(calculate("4 % 2").is_err());
-}
-
-#[test]
-fn test_incorrect_token_count() {
-    assert!(calculate("3 +").is_err());
-    assert!(calculate("3 + 5 + 2").is_err());
-    assert!(calculate("+ 3 5").is_err());
-}
-
-#[test]
 fn test_simple_subtraction() {
     assert_eq!(calculate("10 - 3").unwrap(), 7);
     assert_eq!(calculate("5 - 2").unwrap(), 3);
@@ -46,6 +27,24 @@ fn test_simple_division() {
 #[test]
 fn test_division_by_zero() {
     assert!(calculate("10 / 0").is_err());
+}
+
+#[test]
+fn test_invalid_operator() {
+    assert!(calculate("3 & 5").is_err());
+    assert!(calculate("4 % 2").is_err());
+}
+
+#[test]
+fn test_invalid_number() {
+    assert!(calculate("abc + 5").is_err());
+    assert!(calculate("3 + xyz").is_err());
+}
+
+#[test]
+fn test_incorrect_token_count() {
+    assert!(calculate("3 +").is_err());
+    assert!(calculate("+ 3 5").is_err());
 }
 
 #[test]
@@ -78,4 +77,22 @@ fn test_mixed_spaces_and_no_spaces() {
     assert_eq!(calculate("10 -3").unwrap(), 7);
     assert_eq!(calculate("4* 5").unwrap(), 20);
     assert_eq!(calculate("8 /2").unwrap(), 4);
+}
+
+#[test]
+fn test_precedence_basic() {
+    assert_eq!(calculate("3 + 5 * 2").unwrap(), 13);
+    assert_eq!(calculate("10 - 2 * 3").unwrap(), 4);
+}
+
+#[test]
+fn test_precedence_with_no_spaces() {
+    assert_eq!(calculate("3+5*2").unwrap(), 13);
+    assert_eq!(calculate("10-2*3").unwrap(), 4);
+}
+
+#[test]
+fn test_precedence_mixed() {
+    assert_eq!(calculate("8/2 + 4").unwrap(), 8); // 8/2=4 +4=8
+    assert_eq!(calculate("8/2*4").unwrap(), 16); // 8/2=4 *4=16
 }

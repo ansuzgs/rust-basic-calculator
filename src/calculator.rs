@@ -1,38 +1,34 @@
-pub fn calculate(expression: &str) -> Result<i32, String> {
-    //let tokens: Vec<&str> = expression.split_whitespace().collect();
-    let tokens = tokenize(expression)?;
+#[derive(Debug, PartialEq, Clone)]
+enum Operator {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+}
 
-    if tokens.len() != 3 {
-        return Err(String::from("Error: la expresion debe tener 3 elementos"));
-    }
-
-    let lhs = match tokens[0].parse::<i32>() {
-        Ok(lhs) => lhs,
-        Err(_) => return Err(String::from("numero erroneo")),
-    };
-
-    let operator = tokens[1].as_str();
-
-    let rhs = match tokens[2].parse::<i32>() {
-        Ok(rhs) => rhs,
-        Err(_) => return Err(String::from("numero erroneo")),
-    };
-
-    match operator {
-        "+" => Ok(lhs + rhs),
-        "-" => Ok(lhs - rhs),
-        "*" => Ok(lhs * rhs),
-        "/" => {
-            if rhs == 0 {
-                Err(String::from("Error: no se puede dividir por cero"))
-            } else {
-                Ok(lhs / rhs)
-            }
+impl Operator {
+    fn precedence(&self) -> u8 {
+        match self {
+            Operator::Add | Operator::Subtract => 1,
+            Operator::Multiply | Operator::Divide => 2,
         }
-        _ => Err(String::from(
-            "Error: Operador no soportado. Solo se soporta '+', '-', '*' y '/'.",
-        )),
     }
+
+    fn from_str(op: &str) -> Option<Operator> {
+        match op {
+            "+" => Some(Operator::Add),
+            "-" => Some(Operator::Subtract),
+            "*" => Some(Operator::Multiply),
+            "/" => Some(Operator::Divide),
+            _ => None,
+        }
+    }
+}
+
+pub fn calculate(expression: &str) -> Result<i32, String> {
+    let tokens = tokenize(expression)?;
+    let rpn = shuting_yard(&tokens)?;
+    evaluate_rpn(&rpn)
 }
 
 fn tokenize(expression: &str) -> Result<Vec<String>, String> {
@@ -70,4 +66,77 @@ fn tokenize(expression: &str) -> Result<Vec<String>, String> {
 
 fn is_operator(c: char) -> bool {
     matches!(c, '+' | '-' | '*' | '/')
+}
+
+fn shuting_yard(tokens: &[String]) -> Result<Vec<String>, String> {
+    let mut output_queue: Vec<String> = Vec::new();
+    let mut operator_stack: Vec<String> = Vec::new();
+
+    for token in tokens {
+        if let Ok(_num) = token.parse::<i32>() {
+            output_queue.push(token.clone());
+        } else if let Some(op1) = Operator::from_str(token) {
+            while let Some(top) = operator_stack.last() {
+                if let Some(op2) = Operator::from_str(top) {
+                    if (op2.precedence() > op1.precedence())
+                        || (op2.precedence() == op1.precedence())
+                    {
+                        output_queue.push(operator_stack.pop().unwrap());
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            operator_stack.push(token.clone());
+        } else {
+            return Err(format!("Error: operador no soportado '{}'", token));
+        }
+    }
+
+    while let Some(op) = operator_stack.pop() {
+        if op == "(" || op == ")" {
+            return Err(String::from("Error: Paréntesis no balanceados."));
+        }
+        output_queue.push(op);
+    }
+
+    Ok(output_queue)
+}
+
+fn evaluate_rpn(rpn: &[String]) -> Result<i32, String> {
+    let mut stack: Vec<i32> = Vec::new();
+
+    for token in rpn {
+        if let Ok(num) = token.parse::<i32>() {
+            stack.push(num);
+        } else if let Some(op) = Operator::from_str(token) {
+            if stack.len() < 2 {
+                return Err(String::from("Error: Expresion invalida"));
+            }
+            let rhs = stack.pop().unwrap();
+            let lhs = stack.pop().unwrap();
+            let result = match op {
+                Operator::Add => lhs + rhs,
+                Operator::Subtract => lhs - rhs,
+                Operator::Multiply => lhs * rhs,
+                Operator::Divide => {
+                    if rhs == 0 {
+                        return Err(String::from("Error: division por cero"));
+                    }
+                    lhs / rhs
+                }
+            };
+            stack.push(result);
+        } else {
+            return Err(format!("Error: Operador no soportado '{}'", token));
+        }
+    }
+
+    if stack.len() == 1 {
+        Ok(stack[0])
+    } else {
+        Err(String::from("Error: Expresion invalida"))
+    }
 }
