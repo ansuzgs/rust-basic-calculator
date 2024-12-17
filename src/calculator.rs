@@ -19,8 +19,17 @@ pub fn calculate(expression: &str) -> Result<i32, String> {
 
     match operator {
         "+" => Ok(lhs + rhs),
+        "-" => Ok(lhs - rhs),
+        "*" => Ok(lhs * rhs),
+        "/" => {
+            if rhs == 0 {
+                Err(String::from("Error: no se puede dividir por cero"))
+            } else {
+                Ok(lhs / rhs)
+            }
+        }
         _ => Err(String::from(
-            "Error: Operador no soportado. Solo se soporta '+'.",
+            "Error: Operador no soportado. Solo se soporta '+', '-', '*' y '/'.",
         )),
     }
 }
